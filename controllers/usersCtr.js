@@ -35,4 +35,12 @@ async function getOneUser(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllUsers, getOneUser, rj };
+// Users create
+async function addUser(req, res) {
+    try {
+        const rt = await Users.create(req.body);
+        return rj(res, rt);
+    } catch (re) { return rj(res, re, 400); }
+};
+
+module.exports = { getAllUsers, getOneUser, addUser, rj };

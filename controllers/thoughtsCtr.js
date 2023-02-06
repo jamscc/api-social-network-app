@@ -35,4 +35,17 @@ async function getOneThought(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllThoughts, getOneThought, rj };
+// Thoughts create
+async function addThought(req, res) {
+    try {
+        const rt = await Thoughts.create(req.body);
+        // $push id (thoughts)
+        await Users.updateOne(
+            { _id: req.body.userId },
+            { $push: { thoughts: rt._id } },
+        );
+        return rj(res, rt);
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllThoughts, getOneThought, addThought, rj };

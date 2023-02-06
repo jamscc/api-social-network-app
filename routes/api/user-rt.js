@@ -1,7 +1,9 @@
-const { getAllUsers, getOneUser, rj } = require('../../controllers/usersCtr');
+const { getAllUsers, getOneUser, addUser, rj } = require('../../controllers/usersCtr');
 const usersRtr = require('express').Router();
 
-usersRtr.route('/').get(getAllUsers);
+// users - get (all); 
+// user - post
+usersRtr.route('/').get(getAllUsers).post(addUser);
 
 usersRtr.route('/:userId').get(getOneUser);
 

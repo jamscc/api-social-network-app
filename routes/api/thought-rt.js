@@ -1,7 +1,9 @@
-const { getAllThoughts, getOneThought, rj } = require('../../controllers/thoughtsCtr');
+const { getAllThoughts, getOneThought, addThought, rj } = require('../../controllers/thoughtsCtr');
 const thoughtsRtr = require('express').Router();
 
-thoughtsRtr.route('/').get(getAllThoughts);
+// thoughts - get (all); 
+// thought - post
+thoughtsRtr.route('/').get(getAllThoughts).post(addThought);
 
 thoughtsRtr.route('/:thoughtId').get(getOneThought);
 
