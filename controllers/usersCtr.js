@@ -89,4 +89,52 @@ async function updateUser(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllUsers, getOneUser, addUser, updateUser, rj };
+// Users findOneAndRemove
+async function deleteDataUser(req, res) {
+    try {
+        const fnd = await Users.findById({ _id: req.params.userId });
+        const rt = await Users.findOneAndRemove({ _id: req.params.userId });
+        // given what is returned
+        if (rt) {
+            // Thoughts findOneAndRemove
+            if (fnd.thoughts.length > 0) {
+                for (let i = 0; i < fnd.thoughts.length; i++) {
+                    await Thoughts.findOneAndRemove({ _id: fnd.thoughts[i] });
+                }
+            };
+            // reactions - remove
+            const th = await Thoughts.find({});
+            if (th.length > 0) {
+                for (let i = 0; i < th.length; i++) {
+                    for (let j = 0; j < th[i].reactions.length; j++) {
+                        if (th[i].reactions[j].username == fnd.username) {
+                            await Thoughts.findOneAndUpdate(
+                                { _id: th[i]._id },
+                                { $pull: { reactions: { username: fnd.username } } }
+                            );
+                        };
+                    };
+                };
+            };
+
+            const dataU = await Users.find({});
+            if (dataU.length > 0) {
+                for (let i = 0; i < dataU.length; i++) {
+                    for (let j = 0; j < dataU[i].friends.length; j++) {
+                        if (dataU[i].friends[j] == req.params.userId) {
+                            await Users.findOneAndUpdate(
+                                { _id: dataU[i]._id },
+                                { $pull: { friends: req.params.userId } }
+                            );
+                        };
+                    };
+                };
+            };
+            return rj(res, 'user and thoughts and reactions of user - data removed');
+        } else {
+            return rj(res, 'try another id', 400);
+        };
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllUsers, getOneUser, addUser, updateUser, deleteDataUser, rj };

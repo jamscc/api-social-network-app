@@ -69,4 +69,23 @@ async function updateThought(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllThoughts, getOneThought, addThought, updateThought, rj };
+// Thoughts findOneAndRemove
+async function deleteThought(req, res) {
+    try {
+        const rt = await Thoughts.findOneAndRemove({ _id: req.params.thoughtId });
+        // given what is returned
+        if (rt) {
+            // findOneAndUpdate
+            // $pull
+            await Users.findOneAndUpdate(
+                { username: rt.username },
+                { $pull: { thoughts: req.params.thoughtId}}
+                );
+            return rj(res, 'thought - deleted');
+        } else {
+            return rj(res, 'try another id', 400);
+        };
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllThoughts, getOneThought, addThought, updateThought, deleteThought, rj };
