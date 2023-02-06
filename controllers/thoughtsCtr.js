@@ -48,4 +48,25 @@ async function addThought(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllThoughts, getOneThought, addThought, rj };
+// Thoughts updateOne
+async function updateThought(req, res) {
+    try {
+        // Thoughts findOne
+        const rt = await Thoughts.findOne({ _id: req.params.thoughtId });
+        // given what is returned
+        if (rt) {
+            // updateOne
+            // $set thoughtText
+            await Thoughts.updateOne(
+                { _id: req.params.thoughtId },
+                { $set: { thoughtText: req.body.thoughtText } },
+                { upsert: true }
+            );
+            Thoughts.findOne({ _id: req.params.thoughtId }).then((d) => rj(res, d));
+        } else {
+            return rj(res, 'try another id', 400);
+        };
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllThoughts, getOneThought, addThought, updateThought, rj };
