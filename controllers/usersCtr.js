@@ -25,7 +25,7 @@ async function getAllUsers(req, res) {
 // Users findOne
 async function getOneUser(req, res) {
     try {
-        const rt = await Users.findOne({ _id: req.params.userId });
+        const rt = await Users.findOne({ _id: req.params.userId }).populate(['thoughts', 'friends']);
         // given what is returned
         if (rt) {
             return rj(res, rt);
@@ -137,4 +137,53 @@ async function deleteDataUser(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllUsers, getOneUser, addUser, updateUser, deleteDataUser, rj };
+// id (friend)
+// add to the list
+async function addListFriend(req, res) {
+    try {
+        // whether id is in the list
+        const ck = await Users.findById({ _id: req.params.userId });
+        if (ck.friends.includes(req.params.friendId)) {
+            return rj(res, 'try another id', 400);
+        }
+        // Users updateOne
+        // $push
+        await Users.updateOne(
+            { _id: req.params.userId },
+            { $push: { friends: req.params.friendId } },
+        );
+        await Users.updateOne(
+            { _id: req.params.friendId },
+            { $push: { friends: req.params.userId } },
+        );
+        const rt = await Users.findById({ _id: req.params.userId });
+        return rj(res, rt);
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+// id (friend)
+// remove from the list
+async function removeListFriend(req, res) {
+    try {
+        // Users updateOne
+        // $pull
+        const rt = await Users.updateOne(
+            { _id: req.params.userId },
+            { $pull: { friends: req.params.friendId } },
+        );
+
+        await Users.updateOne(
+            { _id: req.params.friendId },
+            { $pull: { friends: req.params.userId } },
+        );
+
+        // given what is returned
+        if (rt) {
+            return rj(res, 'removed from the list');
+        } else {
+            rj(res, 'try another id', 400);
+        }
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllUsers, getOneUser, addUser, updateUser, deleteDataUser, addListFriend, removeListFriend, rj };
