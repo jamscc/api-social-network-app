@@ -88,4 +88,43 @@ async function deleteThought(req, res) {
     } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
 };
 
-module.exports = { getAllThoughts, getOneThought, addThought, updateThought, deleteThought, rj };
+// add - reaction
+async function addReaction(req, res) {
+    try {
+        // Thoughts updateOne
+        // $push reaction
+        await Thoughts.updateOne(
+            { _id: req.params.thoughtId },
+            {
+                $push: {
+                    reactions: {
+                        reactionBody: req.body.reactionBody,
+                        username: req.body.username,
+                    }
+                }
+            },
+        );
+        const rt = await Thoughts.findById({ _id: req.params.thoughtId })
+        return rj(res, rt);
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+// delete - reaction
+async function deleteReaction(req, res) {
+    try {
+        // Thoughts findOneAndUpdate
+        // $pull reaction
+        const rt = await Thoughts.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $pull: { reactions: { reactionId: req.params.reactionId } } },
+        );
+        // given what is returned
+        if (rt) {
+            return rj(res, 'reaction - removed');
+        } else {
+            return rj(res, 'try another id', 400);
+        };
+    } catch (re) { return rj(res, 'An error has occurred. Please try again.', 500); }
+};
+
+module.exports = { getAllThoughts, getOneThought, addThought, updateThought, deleteThought, addReaction, deleteReaction, rj };
